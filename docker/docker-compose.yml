@@ -79,7 +79,7 @@ x-common-vars:
   - &STACKS_30_HEIGHT ${STACKS_30_HEIGHT:-232}
   - &STACKS_31_HEIGHT ${STACKS_31_HEIGHT:-233}
   - &STACKS_32_HEIGHT ${STACKS_32_HEIGHT:-234}
-  - &STACKS_33_HEIGHT ${STACKS_33_HEIGHT:-235}
+  - &STACKS_33_HEIGHT ${STACKS_33_HEIGHT:-275}
   - &STACKING_CYCLES ${STACKING_CYCLES:-1} # number of cycles to stack-stx or stack-extend for
   - &POX_PREPARE_LENGTH ${POX_PREPARE_LENGTH:-5}
   - &POX_REWARD_LENGTH ${POX_REWARD_LENGTH:-20}
@@ -87,6 +87,15 @@ x-common-vars:
   - &REWARD_RECIPIENT_2 ${REWARD_RECIPIENT_2:-ST2FW15NGB4H76FMVXKHYYSM865YVS6V3SA1GNABC} # priv: fe3087801196d8027008146b13e6d365920c2e4b7bc9969729ec2f0f22ef74fc01
   - &REWARD_RECIPIENT_3 ${REWARD_RECIPIENT_3:-ST2MES40ZEXTX9M4YXW9QSWHRVC9HYT419S198VPM} # priv: ed7eb063c61b8e892987228f1fcfb74eab5009568861613dc4b074b708a7893701
   - &STACKS_CORE_BASE_BRANCH ${STACKS_CORE_BASE_BRANCH:-3.3.0.0.0}
+  - &STACKS_CORE_BASE_BRANCH_1 ${STACKS_CORE_BASE_BRANCH_1:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.0}}
+  - &STACKS_CORE_BASE_BRANCH_2 ${STACKS_CORE_BASE_BRANCH_2:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.0}}
+  - &STACKS_CORE_BASE_BRANCH_3 ${STACKS_CORE_BASE_BRANCH_3:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.0}}
+  - &MINER_CONFIG_PATH_1 ${MINER_CONFIG_PATH_1:-./stacks/stacks-miner_signer.toml}
+  - &MINER_CONFIG_PATH_2 ${MINER_CONFIG_PATH_2:-./stacks/stacks-miner_signer.toml}
+  - &MINER_CONFIG_PATH_3 ${MINER_CONFIG_PATH_3:-./stacks/stacks-miner_signer.toml}
+  - &SIGNER_CONFIG_PATH_1 ${SIGNER_CONFIG_PATH_1:-./stacks/stacks-signer.toml}
+  - &SIGNER_CONFIG_PATH_2 ${SIGNER_CONFIG_PATH_2:-./stacks/stacks-signer.toml}
+  - &SIGNER_CONFIG_PATH_3 ${SIGNER_CONFIG_PATH_3:-./stacks/stacks-signer.toml}
   - &PAUSE_HEIGHT ${PAUSE_HEIGHT:-999999999999}
   - &PAUSE_TIMER 86400000
 
@@ -101,11 +110,53 @@ x-stacks-blockchain-node:
     dockerfile: ./stacks/Dockerfile
     target: stacks-node
 
+x-stacks-blockchain-node-1: &stacks-blockchain-node-1
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_1
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-node
+
+x-stacks-blockchain-node-2: &stacks-blockchain-node-2
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_2
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-node
+
+x-stacks-blockchain-node-3: &stacks-blockchain-node-3
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_3
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-node
+
 x-stacks-blockchain-signer:
   &stacks-blockchain-signer
   build:
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-signer
+
+x-stacks-blockchain-signer-1: &stacks-blockchain-signer-1
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_1
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-signer
+
+x-stacks-blockchain-signer-2: &stacks-blockchain-signer-2
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_2
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-signer
+
+x-stacks-blockchain-signer-3: &stacks-blockchain-signer-3
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_3
     dockerfile: ./stacks/Dockerfile
     target: stacks-signer
 
@@ -149,6 +200,31 @@ x-stacks-node: &stacks-node
       perl -pe 's/\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?/$$ENV{$1}/ge' < config.toml.in > config.toml
       exec stacks-node start --config config.toml 2>&1
 
+# Per-branch stacks-node templates (inherit env/entrypoint, override build)
+x-stacks-node-1: &stacks-node-1
+  <<: *stacks-node
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_1
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-node
+
+x-stacks-node-2: &stacks-node-2
+  <<: *stacks-node
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_2
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-node
+
+x-stacks-node-3: &stacks-node-3
+  <<: *stacks-node
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_3
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-node
+
 x-stacks-signer: &stacks-signer
   <<: *stacks-blockchain-signer
   environment: &stacks-signer-environment
@@ -166,6 +242,31 @@ x-stacks-signer: &stacks-signer
       set -e
       perl -pe 's/\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?/$$ENV{$1}/ge' < config.toml.in > config.toml
       exec stacks-signer run --config config.toml 2>&1
+
+# Per-branch stacks-signer templates
+x-stacks-signer-1: &stacks-signer-1
+  <<: *stacks-signer
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_1
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-signer
+
+x-stacks-signer-2: &stacks-signer-2
+  <<: *stacks-signer
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_2
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-signer
+
+x-stacks-signer-3: &stacks-signer-3
+  <<: *stacks-signer
+  build:
+    args:
+      STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_3
+    dockerfile: ./stacks/Dockerfile
+    target: stacks-signer
   profiles:
     - default
 
@@ -253,7 +354,7 @@ services:
       bitcoin-miner:
         condition: service_healthy
     volumes:
-      - ./stacks/stacks-miner_signer.toml:/data/config.toml.in
+      - ${MINER_CONFIG_PATH_1:-./stacks/stacks-miner_signer.toml}:/data/config.toml.in
       - ${CHAINSTATE_DIR}/stacks-miner-1:/data/chainstate
     environment:
       <<: *stacks-node-environment
@@ -262,12 +363,12 @@ services:
       SIGNER_PORT: 30000
       MINER_SEED: *STACKS_MINER_1_PRIVATE_KEY
       REWARD_RECIPIENT: *REWARD_RECIPIENT_1
-      STACKS_API_HOST: stacks-api
-      STACKS_API_PORT: 3700
+      # STACKS_API_HOST: stacks-api
+      # STACKS_API_PORT: 3700
       MINER_NAME: stacks-miner-1
       STACKS_NODE_IP: *STACKS_MINER_1_IP
       BLOCK_PUSH_FAIL_PROBABILITY: *STACKS_MINER_1_BLOCK_PUSH_FAIL_PROBABILITY
-      STACKS_EVENT_OBSERVER: stacks-api:3700
+      # STACKS_EVENT_OBSERVER: stacks-api:3700
     ports:
       - '127.0.0.1:20443:20443'
     networks:
@@ -275,7 +376,7 @@ services:
         ipv4_address: *STACKS_MINER_1_IP
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    <<: *stacks-node
+    <<: *stacks-node-1
     profiles:
       - default
     stop_grace_period: 5s
@@ -287,7 +388,7 @@ services:
       bitcoin-miner:
         condition: service_healthy
     volumes:
-      - ./stacks/stacks-miner_signer.toml:/data/config.toml.in
+      - ${MINER_CONFIG_PATH_2:-./stacks/stacks-miner_signer.toml}:/data/config.toml.in
       - ${CHAINSTATE_DIR}/stacks-miner-2:/data/chainstate
     environment:
       <<: *stacks-node-environment
@@ -306,7 +407,7 @@ services:
         ipv4_address: *STACKS_MINER_2_IP
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    <<: *stacks-node
+    <<: *stacks-node-2
     profiles:
       - default
     stop_grace_period: 5s
@@ -318,7 +419,7 @@ services:
       bitcoin-miner:
         condition: service_healthy
     volumes:
-      - ./stacks/stacks-miner_signer.toml:/data/config.toml.in
+      - ${MINER_CONFIG_PATH_3:-./stacks/stacks-miner_signer.toml}:/data/config.toml.in
       - ${CHAINSTATE_DIR}/stacks-miner-3:/data/chainstate
     environment:
       <<: *stacks-node-environment
@@ -337,7 +438,7 @@ services:
         ipv4_address: *STACKS_MINER_3_IP
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    <<: *stacks-node
+    <<: *stacks-node-3
     profiles:
       - default
     stop_grace_period: 5s
@@ -346,7 +447,7 @@ services:
   stacks-signer-1:
     container_name: stacks-signer-1
     volumes:
-      - ./stacks/stacks-signer.toml:/data/config.toml.in
+      - ${SIGNER_CONFIG_PATH_1:-./stacks/stacks-signer.toml}:/data/config.toml.in
       - ${CHAINSTATE_DIR}/stacks-signer-1:/data/signer
     environment:
       <<: *stacks-signer-environment
@@ -355,12 +456,12 @@ services:
     networks:
       default:
         ipv4_address: *STACKS_SIGNER_1_IP
-    <<: *stacks-signer
+    <<: *stacks-signer-1
 
   stacks-signer-2:
     container_name: stacks-signer-2
     volumes:
-      - ./stacks/stacks-signer.toml:/data/config.toml.in
+      - ${SIGNER_CONFIG_PATH_2:-./stacks/stacks-signer.toml}:/data/config.toml.in
       - ${CHAINSTATE_DIR}/stacks-signer-2:/data/signer
     environment:
       <<: *stacks-signer-environment
@@ -369,12 +470,12 @@ services:
     networks:
       default:
         ipv4_address: *STACKS_SIGNER_2_IP
-    <<: *stacks-signer
+    <<: *stacks-signer-2
 
   stacks-signer-3:
     container_name: stacks-signer-3
     volumes:
-      - ./stacks/stacks-signer.toml:/data/config.toml.in
+      - ${SIGNER_CONFIG_PATH_3:-./stacks/stacks-signer.toml}:/data/config.toml.in
       - ${CHAINSTATE_DIR}/stacks-signer-3:/data/signer
     environment:
       <<: *stacks-signer-environment
@@ -383,62 +484,62 @@ services:
     networks:
       default:
         ipv4_address: *STACKS_SIGNER_3_IP
-    <<: *stacks-signer
+    <<: *stacks-signer-3
 
-  # Hiro API.
-  # ------------------
-  postgres:
-    image: *IMAGE_POSTGRES
-    container_name: postgres
-    volumes:
-      - ${CHAINSTATE_DIR}/postgres:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    networks:
-      default:
-        ipv4_address: *POSTGRES_IP
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-d", "postgres" ]
-      interval: 5s
-      timeout: 1s
-      retries: 3
-    profiles:
-      - default
-    stop_grace_period: 5s
-    stop_signal: SIGTERM
+  # # Hiro API.
+  # # ------------------
+  # postgres:
+  #   image: *IMAGE_POSTGRES
+  #   container_name: postgres
+  #   volumes:
+  #     - ${CHAINSTATE_DIR}/postgres:/var/lib/postgresql/data
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #   networks:
+  #     default:
+  #       ipv4_address: *POSTGRES_IP
+  #   healthcheck:
+  #     test: [ "CMD-SHELL", "pg_isready", "-d", "postgres" ]
+  #     interval: 5s
+  #     timeout: 1s
+  #     retries: 3
+  #   profiles:
+  #     - default
+  #   stop_grace_period: 5s
+  #   stop_signal: SIGTERM
 
-  stacks-api:
-    image: *IMAGE_STACKS_API
-    container_name: stacks-api
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      NODE_ENV: "production"
-      PG_HOST: "postgres"
-      PG_PORT: 5432
-      PG_USER: "postgres"
-      PG_PASSWORD: "postgres"
-      PG_DATABASE: "postgres"
-      STACKS_CHAIN_ID: "0x80000000"
-      STACKS_CORE_EVENT_PORT: 3700
-      STACKS_CORE_EVENT_HOST: "0.0.0.0"
-      STACKS_BLOCKCHAIN_API_PORT: 3999
-      STACKS_BLOCKCHAIN_API_HOST: "0.0.0.0"
-      STACKS_CORE_RPC_HOST: "stacks-miner-1"
-      STACKS_CORE_RPC_PORT: 20443
-      API_DOCS_URL: http://127.0.0.1:3999/doc
-    ports:
-      - '127.0.0.1:3700:3700'
-      - '127.0.0.1:3999:3999'
-    networks:
-      default:
-        ipv4_address: *STACKS_API_IP
-    profiles:
-      - default
-    stop_grace_period: 5s
-    stop_signal: SIGTERM
+  # stacks-api:
+  #   image: *IMAGE_STACKS_API
+  #   container_name: stacks-api
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   environment:
+  #     NODE_ENV: "production"
+  #     PG_HOST: "postgres"
+  #     PG_PORT: 5432
+  #     PG_USER: "postgres"
+  #     PG_PASSWORD: "postgres"
+  #     PG_DATABASE: "postgres"
+  #     STACKS_CHAIN_ID: "0x80000000"
+  #     STACKS_CORE_EVENT_PORT: 3700
+  #     STACKS_CORE_EVENT_HOST: "0.0.0.0"
+  #     STACKS_BLOCKCHAIN_API_PORT: 3999
+  #     STACKS_BLOCKCHAIN_API_HOST: "0.0.0.0"
+  #     STACKS_CORE_RPC_HOST: "stacks-miner-1"
+  #     STACKS_CORE_RPC_PORT: 20443
+  #     API_DOCS_URL: http://127.0.0.1:3999/doc
+  #   ports:
+  #     - '127.0.0.1:3700:3700'
+  #     - '127.0.0.1:3999:3999'
+  #   networks:
+  #     default:
+  #       ipv4_address: *STACKS_API_IP
+  #   profiles:
+  #     - default
+  #   stop_grace_period: 5s
+  #   stop_signal: SIGTERM
 
   # Stacker
   # ------------------
@@ -453,7 +554,7 @@ services:
       STACKING_CYCLES: *STACKING_CYCLES
       STACKING_KEYS: 41634762d89dfa09133a4a8e9c1378d0161d29cd0a9433b51f1e3d32947a73dc01,9bfecf16c9c12792589dd2b843f850d5b89b81a04f8ab91c083bdf6709fbefee01,3ec0ca5770a356d6cd1a9bfcbf6cd151eb1bd85c388cc00648ec4ef5853fdb7401
       # STACKING_SLOT_DISTRO: 1,4,5
-      STACKING_SLOT_DISTRO: 2,2,2 # Sets the stacking weight for the 3 stacking addresses. Default is evenly distributed across all 3 stackers
+      STACKING_SLOT_DISTRO: 3,3,1 # Sets the stacking weight for the 3 stacking addresses. Default is evenly distributed across all 3 stackers
       STACKS_25_HEIGHT: *STACKS_25_HEIGHT
       STACKS_30_HEIGHT: *STACKS_30_HEIGHT
       POX_PREPARE_LENGTH: *POX_PREPARE_LENGTH
