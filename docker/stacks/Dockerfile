@@ -1,15 +1,27 @@
 FROM rust:bookworm AS builder
 
-# This will be overridden by the value from docker-compose
+# These will be overridden by the value from docker-compose
+ARG STACKS_CORE_REPO=https://github.com/stacks-network/stacks-core.git
 ARG STACKS_CORE_BASE_BRANCH=master
+ARG USE_LOCAL_REPO=false
 
-RUN echo "Building Stacks Core from branch: $STACKS_CORE_BASE_BRANCH"
+# RUN echo "Building Stacks Core from branch: $STACKS_CORE_BASE_BRANCH"
 
-# Clone the specified branch from GitHub
-RUN git clone --branch $STACKS_CORE_BASE_BRANCH --single-branch --depth=1 https://github.com/stacks-network/stacks-core.git /code/stacks-core
-WORKDIR /code/stacks-core
 RUN apt-get update && apt-get install -y git libclang-dev llvm
 
+# Clone from GitHub if USE_LOCAL_REPO is false, otherwise expect local source
+RUN if [ "$USE_LOCAL_REPO" = "false" ]; then \
+      echo "Building Stacks Core from branch: $STACKS_CORE_BASE_BRANCH"; \
+      git clone --branch $STACKS_CORE_BASE_BRANCH --single-branch --depth=1 $STACKS_CORE_REPO /code/stacks-core; \
+    else \
+      echo "Building Stacks Core from local repository"; \
+      mkdir -p /code/stacks-core; \
+    fi
+
+WORKDIR /code/stacks-core
+
+# Copy local source if USE_LOCAL_REPO is true
+COPY . /code/stacks-core/
 # Run an build that we'll cache the result of and then build the code
 RUN cargo build --features monitoring_prom,slog_json --bin stacks-node --bin stacks-signer
 

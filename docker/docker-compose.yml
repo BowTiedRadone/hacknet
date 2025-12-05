@@ -79,7 +79,7 @@ x-common-vars:
   - &STACKS_30_HEIGHT ${STACKS_30_HEIGHT:-232}
   - &STACKS_31_HEIGHT ${STACKS_31_HEIGHT:-233}
   - &STACKS_32_HEIGHT ${STACKS_32_HEIGHT:-234}
-  - &STACKS_33_HEIGHT ${STACKS_33_HEIGHT:-275}
+  - &STACKS_33_HEIGHT ${STACKS_33_HEIGHT:-235}
   - &STACKING_CYCLES ${STACKING_CYCLES:-1} # number of cycles to stack-stx or stack-extend for
   - &POX_PREPARE_LENGTH ${POX_PREPARE_LENGTH:-5}
   - &POX_REWARD_LENGTH ${POX_REWARD_LENGTH:-20}
@@ -87,9 +87,30 @@ x-common-vars:
   - &REWARD_RECIPIENT_2 ${REWARD_RECIPIENT_2:-ST2FW15NGB4H76FMVXKHYYSM865YVS6V3SA1GNABC} # priv: fe3087801196d8027008146b13e6d365920c2e4b7bc9969729ec2f0f22ef74fc01
   - &REWARD_RECIPIENT_3 ${REWARD_RECIPIENT_3:-ST2MES40ZEXTX9M4YXW9QSWHRVC9HYT419S198VPM} # priv: ed7eb063c61b8e892987228f1fcfb74eab5009568861613dc4b074b708a7893701
   - &STACKS_CORE_BASE_BRANCH ${STACKS_CORE_BASE_BRANCH:-3.3.0.0.0}
-  - &STACKS_CORE_BASE_BRANCH_1 ${STACKS_CORE_BASE_BRANCH_1:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.0}}
-  - &STACKS_CORE_BASE_BRANCH_2 ${STACKS_CORE_BASE_BRANCH_2:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.0}}
-  - &STACKS_CORE_BASE_BRANCH_3 ${STACKS_CORE_BASE_BRANCH_3:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.0}}
+  - &STACKS_CORE_REPO ${STACKS_CORE_REPO:-https://github.com/stacks-network/stacks-core.git}
+  - &STACKS_CORE_LOCAL_PATH ${STACKS_CORE_LOCAL_PATH:-../../stacks-core-p-3.3.0.0.2-rc1}
+
+  - &USE_LOCAL_REPO_MINER ${USE_LOCAL_REPO_MINER:-false}
+  - &STACKS_CORE_BASE_BRANCH_1 ${STACKS_CORE_BASE_BRANCH_1:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.1}}
+  - &STACKS_CORE_BASE_BRANCH_2 ${STACKS_CORE_BASE_BRANCH_2:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.1}}
+  - &STACKS_CORE_BASE_BRANCH_3 ${STACKS_CORE_BASE_BRANCH_3:-${STACKS_CORE_BASE_BRANCH:-3.3.0.0.1}}
+
+  - &STACKS_CORE_LOCAL_PATH_1 ${STACKS_CORE_LOCAL_PATH_1:-${STACKS_CORE_LOCAL_PATH:-.}}
+  - &STACKS_CORE_LOCAL_PATH_2 ${STACKS_CORE_LOCAL_PATH_2:-${STACKS_CORE_LOCAL_PATH:-.}}
+  - &STACKS_CORE_LOCAL_PATH_3 ${STACKS_CORE_LOCAL_PATH_3:-${STACKS_CORE_LOCAL_PATH:-.}}
+
+  - &USE_LOCAL_REPO_SIGNER ${USE_LOCAL_REPO_SIGNER:-false}
+  - &USE_LOCAL_REPO_SIGNER_1 ${USE_LOCAL_REPO_SIGNER_1:-false}
+  - &USE_LOCAL_REPO_SIGNER_2 ${USE_LOCAL_REPO_SIGNER_2:-false}
+  - &USE_LOCAL_REPO_SIGNER_3 ${USE_LOCAL_REPO_SIGNER_3:-false}
+  - &STACKS_SIGNER_LOCAL_PATH ${STACKS_SIGNER_LOCAL_PATH:-../../stacks-core-p-3.3.0.0.2-rc1}
+  - &STACKS_SIGNER_BASE_BRANCH_1 ${STACKS_SIGNER_BASE_BRANCH_1:-${STACKS_SIGNER_BASE_BRANCH:-3.3.0.0.1}}
+  - &STACKS_SIGNER_BASE_BRANCH_2 ${STACKS_SIGNER_BASE_BRANCH_2:-${STACKS_SIGNER_BASE_BRANCH:-3.3.0.0.1}}
+  - &STACKS_SIGNER_BASE_BRANCH_3 ${STACKS_SIGNER_BASE_BRANCH_3:-${STACKS_SIGNER_BASE_BRANCH:-3.3.0.0.1}}
+  - &STACKS_SIGNER_LOCAL_PATH_1 ${STACKS_SIGNER_LOCAL_PATH_1:-${STACKS_SIGNER_LOCAL_PATH:-.}}
+  - &STACKS_SIGNER_LOCAL_PATH_2 ${STACKS_SIGNER_LOCAL_PATH_2:-${STACKS_SIGNER_LOCAL_PATH:-.}}
+  - &STACKS_SIGNER_LOCAL_PATH_3 ${STACKS_SIGNER_LOCAL_PATH_3:-${STACKS_SIGNER_LOCAL_PATH:-.}}
+
   - &MINER_CONFIG_PATH_1 ${MINER_CONFIG_PATH_1:-./stacks/stacks-miner_signer.toml}
   - &MINER_CONFIG_PATH_2 ${MINER_CONFIG_PATH_2:-./stacks/stacks-miner_signer.toml}
   - &MINER_CONFIG_PATH_3 ${MINER_CONFIG_PATH_3:-./stacks/stacks-miner_signer.toml}
@@ -102,61 +123,82 @@ x-common-vars:
 # Templates.
 # ------------------------------------------------------------------------------
 
-x-stacks-blockchain-node:
-  &stacks-blockchain-node
+x-stacks-blockchain-node: &stacks-blockchain-node
   build:
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH
+      STACKS_CORE_REPO: *STACKS_CORE_REPO
+      USE_LOCAL_REPO: *USE_LOCAL_REPO_MINER
     dockerfile: ./stacks/Dockerfile
     target: stacks-node
 
 x-stacks-blockchain-node-1: &stacks-blockchain-node-1
   build:
+    context: *STACKS_CORE_LOCAL_PATH_1
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_1
+      STACKS_CORE_REPO: *STACKS_CORE_REPO
+      USE_LOCAL_REPO: *USE_LOCAL_REPO_MINER
     dockerfile: ./stacks/Dockerfile
     target: stacks-node
 
 x-stacks-blockchain-node-2: &stacks-blockchain-node-2
   build:
+    context: *STACKS_CORE_LOCAL_PATH_2
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_2
+      STACKS_CORE_REPO: *STACKS_CORE_REPO
+      USE_LOCAL_REPO: *USE_LOCAL_REPO_MINER
     dockerfile: ./stacks/Dockerfile
     target: stacks-node
 
 x-stacks-blockchain-node-3: &stacks-blockchain-node-3
   build:
+    context: *STACKS_CORE_LOCAL_PATH_3
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_3
+      STACKS_CORE_REPO: *STACKS_CORE_REPO
+      USE_LOCAL_REPO: *USE_LOCAL_REPO_MINER
     dockerfile: ./stacks/Dockerfile
     target: stacks-node
 
-x-stacks-blockchain-signer:
-  &stacks-blockchain-signer
+x-stacks-blockchain-signer: &stacks-blockchain-signer
   build:
+    context: *STACKS_SIGNER_LOCAL_PATH
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH
+      STACKS_CORE_REPO: *STACKS_CORE_REPO
+      USE_LOCAL_REPO: *USE_LOCAL_REPO_SIGNER
     dockerfile: ./stacks/Dockerfile
     target: stacks-signer
 
 x-stacks-blockchain-signer-1: &stacks-blockchain-signer-1
   build:
+    context: *STACKS_SIGNER_LOCAL_PATH_1
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_1
+      STACKS_CORE_REPO: *STACKS_CORE_REPO
+      USE_LOCAL_REPO: *USE_LOCAL_REPO_SIGNER_1
     dockerfile: ./stacks/Dockerfile
     target: stacks-signer
 
 x-stacks-blockchain-signer-2: &stacks-blockchain-signer-2
   build:
+    context: *STACKS_SIGNER_LOCAL_PATH_2
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_2
+      STACKS_CORE_REPO: *STACKS_CORE_REPO
+      USE_LOCAL_REPO: *USE_LOCAL_REPO_SIGNER_2
     dockerfile: ./stacks/Dockerfile
     target: stacks-signer
 
 x-stacks-blockchain-signer-3: &stacks-blockchain-signer-3
   build:
+    context: *STACKS_SIGNER_LOCAL_PATH_3
     args:
       STACKS_CORE_BASE_BRANCH: *STACKS_CORE_BASE_BRANCH_3
+      STACKS_CORE_REPO: *STACKS_CORE_REPO
+      USE_LOCAL_REPO: *USE_LOCAL_REPO_SIGNER_3
     dockerfile: ./stacks/Dockerfile
     target: stacks-signer
 
@@ -284,8 +326,8 @@ services:
       - ./bitcoin/bitcoin.conf:/root/.bitcoin/bitcoin.conf
       - ${CHAINSTATE_DIR}/bitcoin:/root/.bitcoin/regtest
     ports:
-      - '127.0.0.1:18443:18443'
-      - '127.0.0.1:18444:18444'
+      - "127.0.0.1:18443:18443"
+      - "127.0.0.1:18444:18444"
     networks:
       default:
         ipv4_address: *BITCOIN_IP
@@ -296,7 +338,7 @@ services:
         set -e
         bitcoind
     healthcheck:
-      test: [ "CMD-SHELL", "bitcoin-cli -rpcwait getblockcount" ]
+      test: ["CMD-SHELL", "bitcoin-cli -rpcwait getblockcount"]
       interval: 5s
       timeout: 1s
       retries: 3
@@ -339,7 +381,11 @@ services:
     healthcheck:
       # Since we're mining btc blocks to the ((STACKS_2_05_HEIGHT-1)), add a healthcheck so stacks-miners do not try and create a descriptor wallet on startup
       #   **Note**: Removing this healthcheck can create a race condition where the wallet may not be created, and the stacks miner will create it on startup (this will break the setup)
-      test: [ "CMD-SHELL", "bitcoin-cli -rpcwait -rpcconnect=bitcoin getblockhash $$((STACKS_2_05_HEIGHT - 1))" ]
+      test:
+        [
+          "CMD-SHELL",
+          "bitcoin-cli -rpcwait -rpcconnect=bitcoin getblockhash $$((STACKS_2_05_HEIGHT - 1))",
+        ]
       interval: 5s
       timeout: 1s
       retries: 10
@@ -370,7 +416,7 @@ services:
       BLOCK_PUSH_FAIL_PROBABILITY: *STACKS_MINER_1_BLOCK_PUSH_FAIL_PROBABILITY
       # STACKS_EVENT_OBSERVER: stacks-api:3700
     ports:
-      - '127.0.0.1:20443:20443'
+      - "127.0.0.1:20443:20443"
     networks:
       default:
         ipv4_address: *STACKS_MINER_1_IP
@@ -401,7 +447,7 @@ services:
       STACKS_NODE_IP: *STACKS_MINER_2_IP
       BLOCK_PUSH_FAIL_PROBABILITY: *STACKS_MINER_2_BLOCK_PUSH_FAIL_PROBABILITY
     ports:
-      - '127.0.0.1:21443:20443'
+      - "127.0.0.1:21443:20443"
     networks:
       default:
         ipv4_address: *STACKS_MINER_2_IP
@@ -432,7 +478,7 @@ services:
       STACKS_NODE_IP: *STACKS_MINER_3_IP
       BLOCK_PUSH_FAIL_PROBABILITY: *STACKS_MINER_3_BLOCK_PUSH_FAIL_PROBABILITY
     ports:
-      - '127.0.0.1:22443:20443'
+      - "127.0.0.1:22443:20443"
     networks:
       default:
         ipv4_address: *STACKS_MINER_3_IP
